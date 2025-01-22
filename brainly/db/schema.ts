@@ -21,3 +21,10 @@ const tagSchema = new mongoose.Schema({
 })
 
 export const TagtModel = mongoose.model('Tag', tagSchema);
+
+const shareLinkSchema = new mongoose.Schema({
+  hash:  {type: String, required: true},
+  userId:{type: mongoose.Types.ObjectId, ref: 'User', required: true}
+})
+
+export const ShareLinkModel = mongoose.model('ShareLink', shareLinkSchema);

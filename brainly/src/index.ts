@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import { z } from 'zod';
-import { ContentModel, TagtModel, UserModel } from "../db/schema";
+import { ContentModel, ShareLinkModel, TagtModel, UserModel } from "../db/schema";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,7 +16,7 @@ interface JwtPayload {
     userId: string
 }
 
-app.post("/signup", async (req: Request, res: Response): Promise<any> => {
+app.post("/brain/signup", async (req: Request, res: Response): Promise<any> => {
     const requiredBody = z.object({
         username: z.string().min(5),
         password: z.string().min(6),
@@ -46,7 +46,7 @@ app.post("/signup", async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-app.post('/signin', async (req: Request, res: Response): Promise<any> => {
+app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
     const requiredBody = z.object({
         username: z.string().min(5),
         password: z.string().min(6),
@@ -116,7 +116,7 @@ app.use((req, res, next) => {
 
 
 
-app.post('/content', async (req, res): Promise<any> => {
+app.post('/brain/content', async (req, res): Promise<any> => {
     const userId = req.userID;
     const { title, url, tags, } = req.body;
     if (!Array.isArray(tags) || !title || !url) {
@@ -148,12 +148,12 @@ app.post('/content', async (req, res): Promise<any> => {
     }
 });
 
-app.get('/content', async (req, res) => {
+app.get('/brain/content', async (req, res) => {
     const userId = req.userID;
 
     try {
-        const allContent = await ContentModel.find({ userId: userId });
-        res.status(200).json({allContent});
+        const allContent = await ContentModel.find({ userId: userId }).populate('userId', "username");
+        res.status(200).json({ allContent });
     } catch (error) {
         console.error("Server-side error:", error);
         res.status(500).json({ message: "Server side error", error });
@@ -161,6 +161,59 @@ app.get('/content', async (req, res) => {
 
 });
 
+app.delete('/brain/content', async (req, res) => {
+    const userID = req.userID;
+    const contentId = req.body;
+    try {
+        await ContentModel.deleteOne({ _id: contentId, userId: userID });
+        res.status(200).json({ message: "Your content deleted successfully" });
+    } catch (error) {
+        console.error("Server-side error:", error);
+        res.status(500).json({ message: "Server side error", error });
+    }
+})
+
+app.post('/brain/share', async (req, res) => {
+    const { share } = req.body;
+    const userID = req.userID;
+
+    try {
+        if (share) {
+            const existingLink = await ShareLinkModel.findOne({ userId: userID });
+            if (existingLink) {
+                res.status(200).json({ hash: existingLink.hash });
+                return;
+            }
+
+            const hash = bcrypt.hash('iloveyouswati', 10);
+
+            const shareLink = await ShareLinkModel.create({ userId: userID, hash: hash });
+            res.status(200).json({ hash: shareLink.hash });
+        }
+    } catch (error) {
+        console.error("Server-side error:", error);
+        res.status(500).json({ message: "Server side error", error });
+    }
+});
+
+app.get('/brain/share', async (req, res): Promise<any> => {
+    const { share } = req.body;
+
+    try {
+        const link = await ShareLinkModel.findOne({ hash: share });
+
+        if (!link) {
+            return res.status(400).json({ messagee: "invalid link" });
+        }
+
+        const content = await ContentModel.findOne({ userId: link.userId }).populate('user', 'username');
+
+        res.status(200).json({ content })
+    } catch (error) {
+        console.error("Server-side error:", error);
+        res.status(500).json({ message: "Server side error", error });
+    }
+})
 
 
 async function main() {
