@@ -1,16 +1,20 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import { z } from 'zod';
+import cookieParser from "cookie-parser";
+
 import { ContentModel, ShareLinkModel, TagModel, UserModel } from "./db/schema";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cookieParser());
+
 
 interface JwtPayload {
     userId: string
@@ -74,7 +78,7 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
         }
 
         const userId = findUser._id.toString();
-        const token = jwt.sign(userId, process.env.JWT_SECRET);
+        const token = jwt.sign({userId}, process.env.JWT_SECRET);
 
         res.cookie('token', token, {
             httpOnly: true,       // Prevent access via JavaScript
@@ -88,9 +92,9 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-app.use(async (req, res, next): Promise<any> => {
+const middelware = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const tokenSchema = z.string(); // Validate that token is a string
-
+    
     try {
         // Validate the presence of the token in cookies
         const parsedBody = tokenSchema.safeParse(req.cookies.token);
@@ -99,6 +103,8 @@ app.use(async (req, res, next): Promise<any> => {
         }
 
         const token = parsedBody.data;
+
+        
 
         // Ensure JWT_SECRET is defined
         if (!process.env.JWT_SECRET) {
@@ -110,6 +116,8 @@ app.use(async (req, res, next): Promise<any> => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
 
         if (decoded) {
+            console.log("decode",decoded);
+            
             req.userID = decoded.userId; // Assuming the payload contains `userId`
             return next();
         }
@@ -119,13 +127,14 @@ app.use(async (req, res, next): Promise<any> => {
         console.error("Token validation error:", error);
         res.status(401).json({ message: "Invalid or expired token" });
     }
-})
+}
 
 
 
-app.post('/brain/content', async (req, res): Promise<any> => {
+app.post('/brain/content', middelware, async (req, res): Promise<any> => {
     const userId = req.userID;
-
+    console.log("userid", userId);
+    
     const requiredBody = z.object({
         title: z.string(),
         url: z.string(),
@@ -166,7 +175,7 @@ app.post('/brain/content', async (req, res): Promise<any> => {
     }
 });
 
-app.get('/brain/content', async (req, res) => {
+app.get('/brain/content',middelware, async (req, res) => {
     const userId = req.userID;
 
     try {
@@ -179,9 +188,19 @@ app.get('/brain/content', async (req, res) => {
 
 });
 
-app.delete('/brain/content', async (req, res) => {
+app.delete('/brain/content', middelware, async (req, res):Promise<any> => {
     const userID = req.userID;
-    const contentId = req.body;
+    const requiredBody = z.object({
+        contentId: z.string()
+    });
+    const parsedBody = requiredBody.safeParse(req.body);
+    
+    if (!parsedBody.success) {
+        return res.status(400).json({ message: "Content ID is required" });
+    }
+    
+    const { contentId } = parsedBody.data;
+    
 
     if (!contentId) {
         res.status(400).json({ message: "content id is required" });
@@ -196,9 +215,10 @@ app.delete('/brain/content', async (req, res) => {
     }
 })
 
-app.post('/brain/share', async (req, res) => {
+app.post('/brain/share', middelware, async (req, res) => {
     const { share } = req.body;
     const userID = req.userID;
+    
 
     try {
         if (share) {
@@ -208,7 +228,7 @@ app.post('/brain/share', async (req, res) => {
                 return;
             }
 
-            const hash = bcrypt.hash('iloveyouswati', 10);
+            const hash = await bcrypt.hash('iloveyouswati', 10);
 
             const shareLink = await ShareLinkModel.create({ userId: userID, hash: hash });
             res.status(200).json({ hash: shareLink.hash });
@@ -219,8 +239,18 @@ app.post('/brain/share', async (req, res) => {
     }
 });
 
-app.get('/brain/share', async (req, res): Promise<any> => {
-    const { sharelink } = req.body;
+app.get('/brain/share', middelware, async (req, res): Promise<any> => {
+    const requiredBody = z.object({
+        sharelink: z.string()
+    });
+    const parsedBody = requiredBody.safeParse(req.body);
+    
+    if (!parsedBody.success) {
+        return res.status(400).json({ message: "Invalid share link" });
+    }
+    
+    const { sharelink } = parsedBody.data;
+    
 
     try {
         const link = await ShareLinkModel.findOne({ hash: sharelink });
@@ -229,7 +259,7 @@ app.get('/brain/share', async (req, res): Promise<any> => {
             return res.status(400).json({ messagee: "invalid link" });
         }
 
-        const content = await ContentModel.find({ userId: link.userId }).populate('user', 'username');
+        const content = await ContentModel.find({ userId: link.userId })
 
         res.status(200).json({ content })
     } catch (error) {
