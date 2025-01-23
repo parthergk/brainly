@@ -4,8 +4,8 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import { array, string, z } from 'zod';
-import { ContentModel, ShareLinkModel, TagModel, UserModel } from "../db/schema";
+import { z } from 'zod';
+import { ContentModel, ShareLinkModel, TagModel, UserModel } from "./db/schema";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -88,30 +88,37 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-app.use((req, res, next) => {
-    const token = req.cookies.token;
-
-    if (!token) {
-        res.status(400).json({ message: "You are not login" });
-    }
-
-    if (!process.env.JWT_SECRET) {
-        return console.log("JWT_SECRET required");
-    }
+app.use(async (req, res, next): Promise<any> => {
+    const tokenSchema = z.string(); // Validate that token is a string
 
     try {
+        // Validate the presence of the token in cookies
+        const parsedBody = tokenSchema.safeParse(req.cookies.token);
+        if (!parsedBody.success) {
+            return res.status(401).json({ message: "You are not logged in" });
+        }
+
+        const token = parsedBody.data;
+
+        // Ensure JWT_SECRET is defined
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is required in environment variables.");
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
+
+        // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
 
         if (decoded) {
-            req.userID = decoded.userId;
-            next();
+            req.userID = decoded.userId; // Assuming the payload contains `userId`
+            return next();
         }
+
+        res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
-        console.error('Invalid token:', error);
-        res.status(400).json({ message: "Invalid token" });
+        console.error("Token validation error:", error);
+        res.status(401).json({ message: "Invalid or expired token" });
     }
-
-
 })
 
 
@@ -127,11 +134,11 @@ app.post('/brain/content', async (req, res): Promise<any> => {
 
     const parsedBody = requiredBody.safeParse(req.body);
 
-    
+
     if (!parsedBody.success) {
         return res.status(400).json({ message: "Invalid input data" });
     }
-    
+
     const { title, url, tags, } = parsedBody.data;
 
     const tagsArray = [];
@@ -177,7 +184,7 @@ app.delete('/brain/content', async (req, res) => {
     const contentId = req.body;
 
     if (!contentId) {
-        res.status(400).json({message:"content id is required"});
+        res.status(400).json({ message: "content id is required" });
     }
 
     try {
