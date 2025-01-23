@@ -1,16 +1,19 @@
 import mongoose from "mongoose";
 
 const useSchema = new mongoose.Schema({
-    username : {type: String, required: true, unique: true},
-    password : {type: String, required: true},
+    username: {type: String, required: true, unique: true},
+    password: {type: String, required: true},
 });
 
 export const UserModel = mongoose.model('User', useSchema);
 
+const contentType = ['url', 'image', 'video', 'audio'];
+
 const contentSchema = new mongoose.Schema({
-    userId : {type: mongoose.Types.ObjectId, ref: 'User', required: true},
-    url : {type: String, required: true},
+    userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true},
     title: {type: String, required: true},
+    type: {type:String, enum:contentType},
+    url: {type: String, required: true},
     tags: [{type: mongoose.Types.ObjectId, ref: 'Tag'}],
 });
 
@@ -23,8 +26,8 @@ const tagSchema = new mongoose.Schema({
 export const TagModel = mongoose.model('Tag', tagSchema);
 
 const shareLinkSchema = new mongoose.Schema({
-  hash:  {type: String, required: true},
-  userId:{type: mongoose.Types.ObjectId, ref: 'User', required: true}
+  hash: {type: String, required: true},
+  userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true}
 })
 
 export const ShareLinkModel = mongoose.model('ShareLink', shareLinkSchema);

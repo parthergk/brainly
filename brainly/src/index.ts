@@ -74,7 +74,8 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
         }
 
         if (!process.env.JWT_SECRET) {
-            return console.log("JWT_SECRET required");
+            console.log("JWT_SECRET required");
+            return res.status(500).json({ message: "Server-side error"});
         }
 
         const userId = findUser._id.toString();
@@ -108,10 +109,7 @@ const middelware = async (req: Request, res: Response, next: NextFunction): Prom
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
 
         if (decoded) {
-            console.log("decode", decoded);
-
             req.userID = decoded.userId; 
-            
             return next();
         }
 
@@ -126,10 +124,10 @@ const middelware = async (req: Request, res: Response, next: NextFunction): Prom
 
 app.post('/brain/content', middelware, async (req, res): Promise<any> => {
     const userId = req.userID;
-    console.log("userid", userId);
 
     const requiredBody = z.object({
         title: z.string(),
+        // type: z.
         url: z.string(),
         tags: z.array(z.string())
     });

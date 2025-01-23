@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon tsc -b ./dist/index.js"
+    "build": "tsc -b",
+    "start": "node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,6 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "nodemon": "^3.1.9",
     "npm": "^11.0.0",
     "typescript": "^5.7.3"
   },
