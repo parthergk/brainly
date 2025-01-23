@@ -20,7 +20,7 @@ const tagSchema = new mongoose.Schema({
     title: {type: String}
 })
 
-export const TagtModel = mongoose.model('Tag', tagSchema);
+export const TagModel = mongoose.model('Tag', tagSchema);
 
 const shareLinkSchema = new mongoose.Schema({
   hash:  {type: String, required: true},

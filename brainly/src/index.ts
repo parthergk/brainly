@@ -4,8 +4,8 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import { z } from 'zod';
-import { ContentModel, ShareLinkModel, TagtModel, UserModel } from "../db/schema";
+import { array, string, z } from 'zod';
+import { ContentModel, ShareLinkModel, TagModel, UserModel } from "../db/schema";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -118,16 +118,27 @@ app.use((req, res, next) => {
 
 app.post('/brain/content', async (req, res): Promise<any> => {
     const userId = req.userID;
-    const { title, url, tags, } = req.body;
-    if (!Array.isArray(tags) || !title || !url) {
+
+    const requiredBody = z.object({
+        title: z.string(),
+        url: z.string(),
+        tags: z.array(z.string())
+    });
+
+    const parsedBody = requiredBody.safeParse(req.body);
+
+    
+    if (!parsedBody.success) {
         return res.status(400).json({ message: "Invalid input data" });
     }
+    
+    const { title, url, tags, } = parsedBody.data;
 
     const tagsArray = [];
 
     try {
         for (const tag of tags) {
-            const findTag = await TagtModel.findOneAndUpdate(
+            const findTag = await TagModel.findOneAndUpdate(
                 { title: tag },
                 { $setOnInsert: { title: tag } }, // Ensure the tag is set on insert
                 { new: true, upsert: true }      // Create a new document if not found
@@ -164,6 +175,11 @@ app.get('/brain/content', async (req, res) => {
 app.delete('/brain/content', async (req, res) => {
     const userID = req.userID;
     const contentId = req.body;
+
+    if (!contentId) {
+        res.status(400).json({message:"content id is required"});
+    }
+
     try {
         await ContentModel.deleteOne({ _id: contentId, userId: userID });
         res.status(200).json({ message: "Your content deleted successfully" });
@@ -197,16 +213,16 @@ app.post('/brain/share', async (req, res) => {
 });
 
 app.get('/brain/share', async (req, res): Promise<any> => {
-    const { share } = req.body;
+    const { sharelink } = req.body;
 
     try {
-        const link = await ShareLinkModel.findOne({ hash: share });
+        const link = await ShareLinkModel.findOne({ hash: sharelink });
 
         if (!link) {
             return res.status(400).json({ messagee: "invalid link" });
         }
 
-        const content = await ContentModel.findOne({ userId: link.userId }).populate('user', 'username');
+        const content = await ContentModel.find({ userId: link.userId }).populate('user', 'username');
 
         res.status(200).json({ content })
     } catch (error) {
