@@ -78,13 +78,9 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
         }
 
         const userId = findUser._id.toString();
-        const token = jwt.sign({userId}, process.env.JWT_SECRET);
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET);
 
-        res.cookie('token', token, {
-            httpOnly: true,       // Prevent access via JavaScript
-            secure: true,         // Send only over HTTPS
-            sameSite: 'strict',   // Prevent CSRF
-        });
+        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict', });
         res.status(200).json({ message: "You are login successfully" });
     } catch (error) {
         console.error("Server-side error:", error);
@@ -93,10 +89,9 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
 });
 
 const middelware = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    const tokenSchema = z.string(); // Validate that token is a string
-    
+    const tokenSchema = z.string();
+
     try {
-        // Validate the presence of the token in cookies
         const parsedBody = tokenSchema.safeParse(req.cookies.token);
         if (!parsedBody.success) {
             return res.status(401).json({ message: "You are not logged in" });
@@ -104,21 +99,19 @@ const middelware = async (req: Request, res: Response, next: NextFunction): Prom
 
         const token = parsedBody.data;
 
-        
-
-        // Ensure JWT_SECRET is defined
         if (!process.env.JWT_SECRET) {
             console.error("JWT_SECRET is required in environment variables.");
             return res.status(500).json({ message: "Internal Server Error" });
         }
 
-        // Verify the token
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
 
         if (decoded) {
-            console.log("decode",decoded);
+            console.log("decode", decoded);
+
+            req.userID = decoded.userId; 
             
-            req.userID = decoded.userId; // Assuming the payload contains `userId`
             return next();
         }
 
@@ -134,7 +127,7 @@ const middelware = async (req: Request, res: Response, next: NextFunction): Prom
 app.post('/brain/content', middelware, async (req, res): Promise<any> => {
     const userId = req.userID;
     console.log("userid", userId);
-    
+
     const requiredBody = z.object({
         title: z.string(),
         url: z.string(),
@@ -156,8 +149,8 @@ app.post('/brain/content', middelware, async (req, res): Promise<any> => {
         for (const tag of tags) {
             const findTag = await TagModel.findOneAndUpdate(
                 { title: tag },
-                { $setOnInsert: { title: tag } }, // Ensure the tag is set on insert
-                { new: true, upsert: true }      // Create a new document if not found
+                { $setOnInsert: { title: tag } },
+                { new: true, upsert: true } 
             )
             tagsArray.push(findTag._id);
         }
@@ -175,11 +168,11 @@ app.post('/brain/content', middelware, async (req, res): Promise<any> => {
     }
 });
 
-app.get('/brain/content',middelware, async (req, res) => {
+app.get('/brain/content', middelware, async (req, res) => {
     const userId = req.userID;
 
     try {
-        const allContent = await ContentModel.find({ userId: userId }).populate('userId', "username");
+        const allContent = await ContentModel.find({ userId: userId }).populate('tags', 'title');;
         res.status(200).json({ allContent });
     } catch (error) {
         console.error("Server-side error:", error);
@@ -188,19 +181,19 @@ app.get('/brain/content',middelware, async (req, res) => {
 
 });
 
-app.delete('/brain/content', middelware, async (req, res):Promise<any> => {
+app.delete('/brain/content', middelware, async (req, res): Promise<any> => {
     const userID = req.userID;
     const requiredBody = z.object({
         contentId: z.string()
     });
     const parsedBody = requiredBody.safeParse(req.body);
-    
+
     if (!parsedBody.success) {
         return res.status(400).json({ message: "Content ID is required" });
     }
-    
+
     const { contentId } = parsedBody.data;
-    
+
 
     if (!contentId) {
         res.status(400).json({ message: "content id is required" });
@@ -218,7 +211,7 @@ app.delete('/brain/content', middelware, async (req, res):Promise<any> => {
 app.post('/brain/share', middelware, async (req, res) => {
     const { share } = req.body;
     const userID = req.userID;
-    
+
 
     try {
         if (share) {
@@ -244,13 +237,13 @@ app.get('/brain/share', middelware, async (req, res): Promise<any> => {
         sharelink: z.string()
     });
     const parsedBody = requiredBody.safeParse(req.body);
-    
+
     if (!parsedBody.success) {
         return res.status(400).json({ message: "Invalid share link" });
     }
-    
+
     const { sharelink } = parsedBody.data;
-    
+
 
     try {
         const link = await ShareLinkModel.findOne({ hash: sharelink });
