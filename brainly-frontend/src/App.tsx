@@ -1,8 +1,7 @@
 import {Button} from "../components/ui/Button"
 import {Plush} from "../components/icons/Plush"
 
-function App() {
-
+function App () {
   return (
     <div>
       <h1>Hello</h1>

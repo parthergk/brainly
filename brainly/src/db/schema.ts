@@ -12,7 +12,7 @@ const contentType = ['url', 'image', 'video', 'audio'];
 const contentSchema = new mongoose.Schema({
     userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true},
     title: {type: String, required: true},
-    type: {type:String, enum:contentType},
+    type: {type:String, enum:contentType, required: true},
     url: {type: String, required: true},
     tags: [{type: mongoose.Types.ObjectId, ref: 'Tag'}],
 });

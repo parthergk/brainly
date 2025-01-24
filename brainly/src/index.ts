@@ -8,6 +8,7 @@ import { z } from 'zod';
 import cookieParser from "cookie-parser";
 
 import { ContentModel, ShareLinkModel, TagModel, UserModel } from "./db/schema";
+import { random } from "./utils";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -127,7 +128,7 @@ app.post('/brain/content', middelware, async (req, res): Promise<any> => {
 
     const requiredBody = z.object({
         title: z.string(),
-        // type: z.
+        type: z.string(),
         url: z.string(),
         tags: z.array(z.string())
     });
@@ -139,7 +140,7 @@ app.post('/brain/content', middelware, async (req, res): Promise<any> => {
         return res.status(400).json({ message: "Invalid input data" });
     }
 
-    const { title, url, tags, } = parsedBody.data;
+    const { title, type, url, tags, } = parsedBody.data;
 
     const tagsArray = [];
 
@@ -154,8 +155,9 @@ app.post('/brain/content', middelware, async (req, res): Promise<any> => {
         }
 
         await ContentModel.create({
-            url: url,
             title: title,
+            type:type,
+            url: url,
             userId: userId,
             tags: tagsArray
         })
@@ -214,15 +216,19 @@ app.post('/brain/share', middelware, async (req, res) => {
     try {
         if (share) {
             const existingLink = await ShareLinkModel.findOne({ userId: userID });
+
             if (existingLink) {
                 res.status(200).json({ hash: existingLink.hash });
                 return;
             }
 
-            const hash = await bcrypt.hash('iloveyouswati', 10);
+            const hash = random(10);
 
             const shareLink = await ShareLinkModel.create({ userId: userID, hash: hash });
             res.status(200).json({ hash: shareLink.hash });
+        }else{
+            await ShareLinkModel.deleteOne({userId:userID});
+            res.status(200).json({ message: "Link removed successfully" });
         }
     } catch (error) {
         console.error("Server-side error:", error);
@@ -230,29 +236,31 @@ app.post('/brain/share', middelware, async (req, res) => {
     }
 });
 
-app.get('/brain/share', middelware, async (req, res): Promise<any> => {
+app.get('/brain/:share', async (req, res): Promise<any> => {
     const requiredBody = z.object({
-        sharelink: z.string()
+        share: z.string()
     });
-    const parsedBody = requiredBody.safeParse(req.body);
+    const parsedBody = requiredBody.safeParse(req.params);
 
     if (!parsedBody.success) {
         return res.status(400).json({ message: "Invalid share link" });
     }
 
-    const { sharelink } = parsedBody.data;
+    const { share } = parsedBody.data;
 
 
     try {
-        const link = await ShareLinkModel.findOne({ hash: sharelink });
+        const link = await ShareLinkModel.findOne({ hash: share });
 
         if (!link) {
             return res.status(400).json({ messagee: "invalid link" });
         }
 
-        const content = await ContentModel.find({ userId: link.userId })
+        const user = await UserModel.findOne({_id:link.userId});
 
-        res.status(200).json({ content })
+        const content = await ContentModel.findOne({ userId: link.userId }).populate('tags', 'title');
+
+        res.status(200).json({user:user?.username, content:content });
     } catch (error) {
         console.error("Server-side error:", error);
         res.status(500).json({ message: "Server side error", error });
