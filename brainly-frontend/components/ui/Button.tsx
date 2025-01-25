@@ -1,26 +1,36 @@
-import { ReactElement } from "react";
-
-export interface ButtonProps {
-  type: "primary" | "secondary";
+import React, { ReactElement } from "react";
+interface ButtonProps {
+  title: string;
   size: "sm" | "md" | "lg";
-  startIcon?: ReactElement
-  text: string;
-  onclick: () => void;
+  type: "primary" | "secondary";
+  onClick?: () => void;
+  icon?: ReactElement;
 }
 
-const veriantStyle = {
-    "primary": "bg-purple-700 text-white",
-    "secondary": "bg-purple-300 text-purple-600"
-}
+const typeVariant = {
+  primary: "bg-[#383838] text-white",
+  secondary: "bg-[#0c8ce9] text-white",
+};
 
-const sizeStyle = {
-    "sm": "py-1 px-2",
-    "md": "py-2 px-4",
-    "lg": "py-3 px-6",
-}
+const sizeVariant = {
+  sm: "px-2",
+  md: "px-4 py-1",
+  lg: "px-6 py-2",
+};
 
-const customStyle =  'rounded-sm flex item-center justify-center gap-2'
+const customStyle = "flex item-center justify-bettwen cursor-pointer";
 
-export const Button = (props: ButtonProps) => {
-    return <button  className={`${customStyle} ${veriantStyle[props.type]} ${sizeStyle[props.size]}`}> {props.startIcon} {props.text}</button>
-}
+export const Button: React.FC<ButtonProps> = ({
+  title,
+  size,
+  type,
+  onClick,
+  icon,
+}) => {
+  return (
+    <button
+      className={`${sizeVariant[size]} ${typeVariant[type]} ${customStyle}`}
+      onClick={onClick}
+    >{`${icon? icon: ""} ${title}`}</button>
+  );
+};

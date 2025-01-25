@@ -1,13 +1,19 @@
-import {Button} from "../components/ui/Button"
-import {Plush} from "../components/icons/Plush"
+import TopBar from "../components/TopBar";
+import SideBar from "../components/SideBar";
+import Main from "../components/Main";
 
-function App () {
+function App() {
   return (
-    <div>
-      <h1>Hello</h1>
-      <div><Button type="secondary" size="md" startIcon={<Plush size="md"/>} text="Click me" onclick={()=>console.log("button clicked")} /></div>
+    <div className=" h-screen w-screen bg-[#2c2c2c] text-white">
+      <div className=" w-full h-full flex flex-col">
+        <TopBar />
+        <div className=" flex h-full">
+          <SideBar />
+          <Main />
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
