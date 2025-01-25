@@ -5,8 +5,10 @@ interface CardProps {
   link: string;
   title: string;
   type: "youtube" | "twitter";
+  tags: Array<string>
 }
-const ContentCard: React.FC<CardProps> = ({ title, link, type }) => {
+
+const ContentCard: React.FC<CardProps> = ({ title, link, type, tags }) => {
   let embedId: string | null = "";
   let tweetId: string = "";
 
@@ -21,8 +23,8 @@ const ContentCard: React.FC<CardProps> = ({ title, link, type }) => {
   getId();
 
   return (
-    <div className="bg-[#3f3f3f] w-80 h-full min-h-96 p-2">
-      <h1>{title}</h1>
+    <div className="bg-[#3f3f3f] w-80 h-full min-h-80 p-2 space-y-2 rounded-sm shadow-xl">
+      <h1 className=" text-center text-lg border-b border-neutral-300">{title}</h1>
       {type === "youtube" ? (
         <iframe
           width="560"
@@ -40,6 +42,23 @@ const ContentCard: React.FC<CardProps> = ({ title, link, type }) => {
           options={{ width: "560" }}
         ></TwitterTweetEmbed>
       )}
+      
+      <div className=" w-full rounded-sm flex flex-wrap gap-2 py-1">
+        {
+          tags.map((tag)=> <span className=" bg-neutral-600 px-2 rounded-sm shadow">#{tag}</span>)
+        }
+
+      </div>
+      <div className="w-full h-auto overflow-hidden bg-neutral-600 shadow-lg rounded-xs px-2">
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block truncate"
+        >
+          {link}
+        </a>
+      </div>
     </div>
   );
 };

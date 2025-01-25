@@ -9,7 +9,7 @@ interface ButtonProps {
 
 const typeVariant = {
   primary: "bg-[#383838] text-white",
-  secondary: "bg-[#0c8ce9] text-white",
+  secondary: "bg-[#c67216] text-white",
 };
 
 const sizeVariant = {
