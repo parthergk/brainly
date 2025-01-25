@@ -8,8 +8,11 @@ interface Inputs {
   youtube: string;
   twitter: string;
 }
+interface AddProps{
+    onClose: (a:boolean)=>void
+}
 
-const AddContent = () => {
+const AddContent:React.FC<AddProps> = ({onClose}) => {
   const {
     register,
     handleSubmit,
@@ -47,12 +50,13 @@ const AddContent = () => {
     <div className=" fixed inset-0 bg-black/30 flex justify-center items-center p-4">
       <div className=" bg-white max-w-96 w-full rounded-sm p-4">
         <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown}>
+            <div className=" flex justify-between items-center">
           <div className=" w-full text-black flex gap-5">
             <span
               onClick={() => setType("youtube")}
               className={`${
                 type == "youtube" ? "bg-neutral-600 text-white shadow-lg" : ""
-              } px-2 cursor-pointer rounded-xs shadow`}
+              } px-2 cursor-pointer rounded-xs`}
             >
               YouTube
             </span>
@@ -60,16 +64,19 @@ const AddContent = () => {
               onClick={() => setType("twitter")}
               className={`${
                 type == "twitter" ? "bg-neutral-600 text-white shadow-lg" : ""
-              } px-2 cursor-pointer rounded-xs shadow`}
+              } px-2 cursor-pointer rounded-xs`}
             >
               Twitter
             </span>
+          </div>
+          <div onClick={()=>onClose(false)} className=" text-black cursor-pointer">Close</div>
           </div>
           {requiredErr && (
             <span className=" text-red-500 text-sm">
               Select one type 
             </span>
           )}
+
           <input
             {...register("title", { required: true })}
             type="text"
