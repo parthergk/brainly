@@ -23,7 +23,7 @@ const ContentCard: React.FC<CardProps> = ({ title, link, type, tags }) => {
   getId();
 
   return (
-    <div className="bg-[#3f3f3f] w-80 h-full min-h-80 p-2 space-y-2 rounded-sm shadow-xl">
+    <div className="bg-[#3f3f3f] w-72 min-h-80 p-2 space-y-2 rounded-sm shadow-xl">
       <h1 className=" text-center text-lg border-b border-neutral-300">{title}</h1>
       {type === "youtube" ? (
         <iframe
@@ -39,7 +39,7 @@ const ContentCard: React.FC<CardProps> = ({ title, link, type, tags }) => {
       ) : (
         <TwitterTweetEmbed
           tweetId={tweetId}
-          options={{ width: "560" }}
+          options={{ width: "500" }}
         ></TwitterTweetEmbed>
       )}
       
