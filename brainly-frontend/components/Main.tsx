@@ -1,4 +1,5 @@
 import ContentCard from "./card/ContentCard";
+import React from "react";
 
 const Main = () => {
   const youtubelink = "https://www.youtube.com/watch?v=UmzFk68Bwdk&t=588s";
