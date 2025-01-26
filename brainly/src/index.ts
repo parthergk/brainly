@@ -6,12 +6,21 @@ import bcrypt from "bcrypt";
 import "dotenv/config";
 import { z } from 'zod';
 import cookieParser from "cookie-parser";
+import cors from "cors"
 
 import { ContentModel, ShareLinkModel, TagModel, UserModel } from "./db/schema";
 import { random } from "./utils";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const allowedOrigins = ['http://localhost:5173'];
+const options: cors.CorsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+};
+
+app.use(cors(options));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -82,7 +91,7 @@ app.post('/brain/signin', async (req: Request, res: Response): Promise<any> => {
         const userId = findUser._id.toString();
         const token = jwt.sign({ userId }, process.env.JWT_SECRET);
 
-        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict', });
+        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'lax', });
         res.status(200).json({ message: "You are login successfully" });
     } catch (error) {
         console.error("Server-side error:", error);

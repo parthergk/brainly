@@ -11,9 +11,21 @@ interface InputsAuth{
 const SignIn = () => {
   const {register, handleSubmit, formState: {errors}} = useForm<InputsAuth>();
 
-  const onSubmit:SubmitHandler<InputsAuth> = (data)=>{
-    console.log(data);
+  const onSubmit:SubmitHandler<InputsAuth> = async(data)=>{
+    const response = await fetch("http://localhost:3000/brain/signin", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: data.username,
+        password: data.password
+      })
+    })
     
+    const json = await response.json();
+    console.log("json data", json);
   }
 
   const handleKeyDown = (e:React.KeyboardEvent)=>{

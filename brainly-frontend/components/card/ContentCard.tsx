@@ -51,7 +51,7 @@ const ContentCard: React.FC<CardProps> = ({ title, link, type, tags }) => {
         <div className=" w-full rounded-sm flex flex-wrap gap-2 py-1">
           {tags.map((tag) => (
             <span className=" bg-neutral-600 px-2 rounded-sm shadow">
-              #{tag}
+              #{tag.title}
             </span>
           ))}
         </div>
