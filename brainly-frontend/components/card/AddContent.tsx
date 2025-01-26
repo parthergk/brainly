@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Button } from "../ui/Button";
+import {bg_url} from '../../helper'
 
 interface Inputs {
   title: string;
@@ -39,7 +40,7 @@ const AddContent: React.FC<AddProps> = ({ onClose }) => {
       return;
     }
 
-    const response = await fetch("http://localhost:3000/brain/content", {
+    const response = await fetch(`${bg_url}/brain/content`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

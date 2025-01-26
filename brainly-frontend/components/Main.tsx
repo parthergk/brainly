@@ -2,6 +2,7 @@
 import ContentCard from "./card/ContentCard";
 import React, { useEffect, useState } from "react";
 // import { itemAtom } from "../store/atom";
+import { bg_url } from "../helper";
 
 interface Tag {
   title: string
@@ -31,7 +32,7 @@ const Main = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("http://localhost:3000/brain/content", {
+      const response = await fetch(`${bg_url}/brain/content`, {
         method: "GET",
         credentials: "include",
       });

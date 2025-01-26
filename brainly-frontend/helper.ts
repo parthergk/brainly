@@ -1,1 +1,1 @@
-export const bg_url = ''
+export const bg_url = 'https://brainly-ten.vercel.app'

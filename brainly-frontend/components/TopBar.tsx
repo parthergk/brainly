@@ -1,5 +1,6 @@
 import { Button } from "./ui/Button";
 import React, { useState } from "react";
+import {bg_url} from "../helper"
 
 interface TopProps {
   onClose: (a: boolean) => void;
@@ -11,7 +12,7 @@ const TopBar: React.FC<TopProps> = ({ onClose }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
 
   const handleShare = async () => {
-    const response = await fetch("http://localhost:3000/brain/share", {
+    const response = await fetch(`${bg_url}/brain/share`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

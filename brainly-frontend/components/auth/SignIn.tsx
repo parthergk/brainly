@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import { Button } from "../ui/Button";
 import { useForm, SubmitHandler } from "react-hook-form";
+import {bg_url} from "../../helper"
 
 interface InputsAuth{
   username: string;
@@ -18,7 +19,7 @@ const {
   const [message, setMessage] = useState<string | null>(null);
 
   const onSubmit:SubmitHandler<InputsAuth> = async(data)=>{
-    const response = await fetch("http://localhost:3000/brain/signin", {
+    const response = await fetch(`${bg_url}/brain/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
