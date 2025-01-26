@@ -1,11 +1,15 @@
 import React from "react";
 import { TwitterTweetEmbed } from "react-twitter-embed";
 
+interface Tag {
+  title: string; // Define what properties a tag object has
+}
+
 interface CardProps {
   link: string;
   title: string;
   type: "youtube" | "twitter";
-  tags: Array<string>;
+  tags: Array<Tag>;
 }
 
 const ContentCard: React.FC<CardProps> = ({ title, link, type, tags }) => {

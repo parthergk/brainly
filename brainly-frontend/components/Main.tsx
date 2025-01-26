@@ -3,6 +3,18 @@ import ContentCard from "./card/ContentCard";
 import React, { useEffect, useState } from "react";
 // import { itemAtom } from "../store/atom";
 
+interface Tag {
+  title: string
+}
+interface Item {
+  _id: string;       
+  title: string;    
+  url: string;       
+  type: "youtube" | "twitter";      
+  tags: Array<Tag>;    
+
+}
+
 const Main = () => {
   // const item = useRecoilValue(itemAtom);
   // console.log(item);
@@ -10,7 +22,7 @@ const Main = () => {
   // const twitte = "https://x.com/shrutikapoor08/status/1883005653108859308";
   // const tags = ["new", "car", "toy", "sex"];
 
-  const [content, setContent] = useState([]);
+  const [content, setContent] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
