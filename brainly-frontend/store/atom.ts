@@ -1,5 +1,5 @@
-import {atom} from "recoil"
+import { atom } from "recoil"
 export const itemAtom = atom({
-    default:"all",
-    key:'item'
+    default: "all",
+    key: 'item'
 })
