@@ -7,7 +7,7 @@ const useSchema = new mongoose.Schema({
 
 export const UserModel = mongoose.model('User', useSchema);
 
-const contentType = ['url', 'image', 'video', 'audio'];
+const contentType = ['youtube', 'twitter'];
 
 const contentSchema = new mongoose.Schema({
     userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true},

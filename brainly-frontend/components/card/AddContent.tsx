@@ -8,21 +8,23 @@ interface Inputs {
   youtube: string;
   twitter: string;
 }
-interface AddProps{
-    onClose: (a:boolean)=>void
+interface AddProps {
+  onClose: (a: boolean) => void;
 }
 
-const AddContent:React.FC<AddProps> = ({onClose}) => {
+const AddContent: React.FC<AddProps> = ({ onClose }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
   const [type, setType] = useState<string>("");
   const [tagInput, setTagInput] = useState<string>("");
   const [tags, setTags] = useState<Array<string>>([]);
   const [requiredErr, setRequiredErr] = useState<boolean>(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const addTags = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -31,13 +33,35 @@ const AddContent:React.FC<AddProps> = ({onClose}) => {
     }
   };
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    if (type==="") {
-        setRequiredErr(true);
-        return;
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    if (type === "") {
+      setRequiredErr(true);
+      return;
     }
 
-    console.log(data);
+    const response = await fetch("http://localhost:3000/brain/content", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        title: data.title,
+        type: type,
+        url: data.url,
+        tags: tags,
+      }),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      setMessage(result.message);
+    } else {
+      const result = await response.json();
+      setMessage(result.message);
+    }
+    reset();
+    setTags([]);
+    setRequiredErr(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,31 +74,34 @@ const AddContent:React.FC<AddProps> = ({onClose}) => {
     <div className=" fixed inset-0 bg-black/30 flex justify-center items-center p-4">
       <div className=" bg-white max-w-96 w-full rounded-sm p-4">
         <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown}>
-            <div className=" flex justify-between items-center">
-          <div className=" w-full text-black flex gap-5">
-            <span
-              onClick={() => setType("youtube")}
-              className={`${
-                type == "youtube" ? "bg-neutral-600 text-white shadow-lg" : ""
-              } px-2 cursor-pointer rounded-xs`}
+          <div className=" flex justify-between items-center">
+            <div className=" w-full text-black flex gap-5">
+              <span
+                onClick={() => setType("youtube")}
+                className={`${
+                  type == "youtube" ? "bg-neutral-600 text-white shadow-lg" : ""
+                } px-2 cursor-pointer rounded-xs`}
+              >
+                YouTube
+              </span>
+              <span
+                onClick={() => setType("twitter")}
+                className={`${
+                  type == "twitter" ? "bg-neutral-600 text-white shadow-lg" : ""
+                } px-2 cursor-pointer rounded-xs`}
+              >
+                Twitter
+              </span>
+            </div>
+            <div
+              onClick={() => onClose(false)}
+              className=" text-black cursor-pointer"
             >
-              YouTube
-            </span>
-            <span
-              onClick={() => setType("twitter")}
-              className={`${
-                type == "twitter" ? "bg-neutral-600 text-white shadow-lg" : ""
-              } px-2 cursor-pointer rounded-xs`}
-            >
-              Twitter
-            </span>
-          </div>
-          <div onClick={()=>onClose(false)} className=" text-black cursor-pointer">Close</div>
+              Close
+            </div>
           </div>
           {requiredErr && (
-            <span className=" text-red-500 text-sm">
-              Select one type 
-            </span>
+            <span className=" text-red-500 text-sm">Select one type</span>
           )}
 
           <input
@@ -120,8 +147,14 @@ const AddContent:React.FC<AddProps> = ({onClose}) => {
             </div>
           )}
           <div className=" w-full text-end mt-5 flex justify-end items-center">
-            <Button title="Submit" type="secondary" size="md" />
+            <Button
+              title="Submit"
+              type="secondary"
+              size="md"
+              isLoading={isSubmitting}
+            />
           </div>
+          {message && <span className=" text-red-500">{message}</span>}
         </form>
       </div>
     </div>

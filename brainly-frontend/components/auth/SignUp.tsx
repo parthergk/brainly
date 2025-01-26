@@ -1,38 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-interface InputsAuth{
+interface InputsAuth {
   username: string;
-  password: string 
+  password: string;
 }
 
-
 const SignUp = () => {
-  const {register, handleSubmit, formState: {errors}} = useForm<InputsAuth>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<InputsAuth>();
+  const [message, setMessage] = useState<string | null>(null);
 
-  const onSubmit:SubmitHandler<InputsAuth> = async (data)=>{
+  const onSubmit: SubmitHandler<InputsAuth> = async (data) => {
     const response = await fetch("http://localhost:3000/brain/signup", {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         username: data.username,
-        password: data.password
-      })
-    })
-    
-    const json = await response.json();
-    console.log("json data", json);
-    
-  }
+        password: data.password,
+      }),
+    });
 
-  const handleKeyDown = (e:React.KeyboardEvent)=>{
-    if (e.key=="enter") {
-      e.preventDefault()
+    const json = await response.json();
+    setMessage(json.message);
+    reset();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key == "enter") {
+      e.preventDefault();
     }
-  }
+  };
 
   return (
     <div className="bg-[#2c2c2c] text-white w-screen h-screen flex justify-center items-center p-4">
@@ -62,8 +67,14 @@ const SignUp = () => {
             </span>
           )}
           <div className=" w-full text-end mt-5 flex justify-end items-center">
-            <Button title="SignUp" type="secondary" size="md" />
+            <Button
+              title="SignUp"
+              type="secondary"
+              size="md"
+              isLoading={isSubmitting}
+            />
           </div>
+          {message && <span>{message}</span>}
         </form>
       </div>
     </div>

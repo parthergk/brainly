@@ -5,6 +5,7 @@ interface ButtonProps {
   type: "primary" | "secondary";
   onClick?: () => void;
   icon?: ReactElement;
+  isLoading?: boolean;
 }
 
 const typeVariant = {
@@ -26,11 +27,13 @@ export const Button: React.FC<ButtonProps> = ({
   type,
   onClick,
   icon,
+  isLoading,
 }) => {
   return (
     <button
+      disabled={isLoading}
       className={`${sizeVariant[size]} ${typeVariant[type]} ${customStyle}`}
       onClick={onClick}
-    >{`${icon? icon: ""} ${title}`}</button>
+    >{`${icon ? icon : ""} ${title}`}</button>
   );
 };

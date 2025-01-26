@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { Button } from "../ui/Button";
 import { useForm, SubmitHandler } from "react-hook-form";
 
@@ -9,7 +9,13 @@ interface InputsAuth{
 
 
 const SignIn = () => {
-  const {register, handleSubmit, formState: {errors}} = useForm<InputsAuth>();
+const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<InputsAuth>();
+  const [message, setMessage] = useState<string | null>(null);
 
   const onSubmit:SubmitHandler<InputsAuth> = async(data)=>{
     const response = await fetch("http://localhost:3000/brain/signin", {
@@ -23,9 +29,9 @@ const SignIn = () => {
         password: data.password
       })
     })
-    
     const json = await response.json();
-    console.log("json data", json);
+    setMessage(json.message);
+    reset();
   }
 
   const handleKeyDown = (e:React.KeyboardEvent)=>{
@@ -33,7 +39,6 @@ const SignIn = () => {
       e.preventDefault()
     }
   }
-
   return (
     <div className="bg-[#2c2c2c] text-white w-screen h-screen flex justify-center items-center p-4">
       <div className=" bg-neutral-700/50 max-w-96 w-full rounded-sm p-4 border border-neutral-500">
@@ -62,8 +67,9 @@ const SignIn = () => {
             </span>
           )}
           <div className=" w-full text-end mt-5 flex justify-end items-center">
-            <Button title="SignIn" type="secondary" size="md" />
+            <Button title="SignIn" type="secondary" size="md" isLoading={isSubmitting} />
           </div>
+          {message && <span>{message}</span>}
         </form>
       </div>
     </div>
