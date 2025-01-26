@@ -30,6 +30,10 @@ interface JwtPayload {
     userId: string
 }
 
+app.get('/',(req: Request, res: Response)=>{
+    res.send("hello");
+})
+
 app.post("/brain/signup", async (req: Request, res: Response): Promise<any> => {
     const requiredBody = z.object({
         username: z.string().min(5),
