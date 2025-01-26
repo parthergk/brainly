@@ -1,6 +1,6 @@
 // import { useRecoilValue } from "recoil";
 import ContentCard from "./card/ContentCard";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 // import { itemAtom } from "../store/atom";
 import { bg_url } from "../helper";
 
